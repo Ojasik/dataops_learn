@@ -22,7 +22,7 @@ jobs:
 
     - name: Update Repos
       run: |
-        databricks repos update --path "${{ secrets.DATABRICKS_WORKSPACE_PATH }}" --branch master
+        databricks repos update --repo-id 3520505619164006 --branch master
 
     - name: Upload Python script to Databricks Repo
       run: |

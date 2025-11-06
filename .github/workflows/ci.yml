@@ -27,6 +27,6 @@ jobs:
     - name: Run Databricks Job
       run: |
         echo "Triggering job..."
-        databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" --wait
+        databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" 
         echo "Databricks Job finished."
 

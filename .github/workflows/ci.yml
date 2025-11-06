@@ -33,7 +33,7 @@ jobs:
 
         echo "Waiting for Job to finish..."
         STATUS="PENDING"
-        while [ "$STATUS" != "SUCCESS" ] && [ "$STATUS" != "FAILED" ]; do
+        while [ "$STATUS" != "SUCCESS" ] && [ "$STATUS" != "FAILED" ] && [ "$STATUS" != "CANCELED" ]; do
             sleep 10
             STATUS=$(databricks runs get --run-id $RUN_ID | jq -r '.state.result_state')
             echo "Current Job Status: $STATUS"

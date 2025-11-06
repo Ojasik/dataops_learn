@@ -24,9 +24,25 @@ jobs:
       run: |
         databricks repos update --repo-id 3520505619164006 --branch master
 
-    - name: Run Databricks Job
+    - name: Run Databricks Job and wait
       run: |
-        echo "Triggering job..."
-        databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" 
-        echo "Databricks Job finished."
+        echo "Triggering Databricks Job..."
+        RUN_INFO=$(databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}")
+        echo "RUN_INFO: $RUN_INFO"
+        RUN_ID=$(echo "$RUN_INFO" | jq -r '.run_id')
+
+        echo "Waiting for Job to finish..."
+        STATUS="PENDING"
+        while [ "$STATUS" != "SUCCESS" ] && [ "$STATUS" != "FAILED" ]; do
+            sleep 10
+            STATUS=$(databricks runs get --run-id $RUN_ID | jq -r '.state.result_state')
+            echo "Current Job Status: $STATUS"
+        done
+
+        if [ "$STATUS" != "SUCCESS" ]; then
+            echo "Databricks Job FAILED! Failing CI..."
+            exit 1
+        fi
+
+        echo "Databricks Job succeeded!"
 

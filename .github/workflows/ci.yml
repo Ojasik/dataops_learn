@@ -1,0 +1,45 @@
+name: CI - Databricks Pipeline Test
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  databricks-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install Databricks CLI
+      run: pip install databricks-cli
+
+    - name: Configure Databricks CLI
+      run: |
+        databricks configure --host "${{ secrets.DATABRICKS_HOST }}" --token "${{ secrets.DATABRICKS_TOKEN }}" --non-interactive
+
+    - name: Upload Python script to Databricks Repo
+      run: |
+        databricks repos update \
+          --path "${{ secrets.DATABRICKS_WORKSPACE_PATH }}" \
+          --branch main
+
+    - name: Run Databricks Job
+      run: |
+        RUN_ID=$(databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" --json | jq -r '.run_id')
+        echo "Started run: $RUN_ID"
+
+        STATUS="PENDING"
+        while [ "$STATUS" != "SUCCESS" ] && [ "$STATUS" != "FAILED" ]; do
+            sleep 10
+            STATUS=$(databricks runs get --run-id $RUN_ID --json | jq -r '.state.life_cycle_state')
+            echo "Status: $STATUS"
+        done
+
+        if [ "$STATUS" != "SUCCESS" ]; then
+            echo "Databricks job failed!"
+            exit 1
+        fi
+
+        echo "Databricks job succeeded"

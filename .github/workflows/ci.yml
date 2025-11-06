@@ -15,16 +15,14 @@ jobs:
     - name: Install Databricks CLI 
       run: pip install databricks-cli
 
-    - name: Configure Databricks CLI
-      env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+    - name: Set Databricks env
       run: |
-        mkdir -p ~/.databricks
-        echo "[DEFAULT]" > ~/.databricks/config
-        echo "host = $DATABRICKS_HOST" >> ~/.databricks/config
-        echo "token = $DATABRICKS_TOKEN" >> ~/.databricks/config
+        echo "DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}" >> $GITHUB_ENV
+        echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}" >> $GITHUB_ENV
 
+    - name: Update Repos
+      run: |
+        databricks repos update --path "${{ secrets.DATABRICKS_WORKSPACE_PATH }}" --branch master
 
     - name: Upload Python script to Databricks Repo
       run: |

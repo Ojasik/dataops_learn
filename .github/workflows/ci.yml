@@ -26,19 +26,7 @@ jobs:
 
     - name: Run Databricks Job
       run: |
-        RUN_ID=$(databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" --json | jq -r '.run_id')
-        echo "Started run: $RUN_ID"
+        echo "Triggering job..."
+        databricks jobs run-now --job-id "${{ secrets.DATABRICKS_JOB_ID }}" --wait
+        echo "Databricks Job finished."
 
-        STATUS="PENDING"
-        while [ "$STATUS" != "SUCCESS" ] && [ "$STATUS" != "FAILED" ]; do
-            sleep 10
-            STATUS=$(databricks runs get --run-id $RUN_ID --json | jq -r '.state.life_cycle_state')
-            echo "Status: $STATUS"
-        done
-
-        if [ "$STATUS" != "SUCCESS" ]; then
-            echo "Databricks job failed!"
-            exit 1
-        fi
-
-        echo "Databricks job succeeded"

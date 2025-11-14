@@ -17,4 +17,4 @@ df_clean.write.format("delta").mode("overwrite").save("/mnt/curated/data")
 
 print("Run is successful!")
 
-#testttt
+
